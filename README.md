@@ -1,59 +1,69 @@
-# CSC 249 – Project 2 – Simple VPN
+# CSC 249 – Project 2 – Simple VPN Anisha Jain 
 
-For this project, you'll be buidling a VPN server and client that will work with sockets.
+## Overview of Application
 
-I’ve placed some starter code in this Git repo [https://github.com/abpw/csc-249-p2-simple-VPN-server], which you are welcome to clone. Your job will be to fill in the "encode_message()" function in "client.py", the "parse_message()" function in "VPN.py", and fill in the rest of the functionality of a VPN in "VPN.py".
+The application consists of a client and a VPN. The purpose of the VPN is to hide the identity of the client, acting as a middle man between the client and server. The client takes in a message that it wants to send to a server, specified by an IP and port, as well as the VPN's ip and port. The client will send an encoded message to the VPN and then wait for its reply. The VPN will listen on its port and receive the client message, then decode the message and send it to the specified server. If the VPN is unable to connect to the server, then it will send a message that the VPN was unable to connect. 
 
-I've also included a slightly modified version of the "echo-server.py" file from project 1 for you to test your VPN with: by default, the echo server, VPN server, and VPN client are configured to run on compatible sockets, but if you'd like to change any ip addresses you can use command line arguments to do so. To use echo-server.py's command line arguments, for example, you can run "python3 echo-server.py --help" from command line in the directory the echo-server.py file is stored.
+## Client->VPN Server Message Format
+The client will take in the `message`, `server_IP`, and `server_port` as arguments. It will then join each of these arguments together as a string separated by the delimiter ":". This is what it will look like: `message:server_ip:server_port`
 
-Note that all three files must be stored in the same direcory as "arguments.py" to run correctly.
+## VPN Server->Client Message Format 
+The VPN server will receive a `message` from the server that is the intended final destination of the client. It will send that message unadulterated to the client. It will just look like `message`. Alternatively, if the VPN is unable to connect to the server, then it will send a message to the client that the VPN was unable to connect. 
 
-Although "echo-server.py" is included as a test server, your client and VPN should be able to interact with any server with any functionality that follows this type of protocol:
 
-* Take as input over a socket a message of up to 1000 bytes in a particular format
-* Return to the sender along the same TCP connection a message of up to 1000 bytes (possibly an error message)
+## Example Output
 
-For example, you may have created a server like this for your project 1. If you did, and if you type exactly the right format of message as input for the VPN client you'll write in this project, you should be able to interact with your project 1 server as well as echo-server.py. In other words, the protocol you defined in project 1 should allow you to create a new client for this project that is somewhat interoperable with your server from the last project.
+Echo server output. 
 
-Like the echo application, your VPN should terminate after successfully processing a client message, and your client should terminate after successfully receiving a response to its request.
+1. Client trace: 
 
-## Design Requirements
+client starting - connecting to VPN at IP 127.0.0.1 and port 55554
 
-Your server must be able to process at least two different requested operations (i.e., it must understand at least two "verbs"). This means that an indication of the requested operation needs to be passed from client to server.
+connection established, sending message 'Hello, world:127.0.0.1:65432'
 
-* Your client must obtain the desired message to be sent through the VPN from the terminal command line. This functionality is already provided in the client.py file.
-* As they run, the client and the VPN applications must generate tracing messages that document significant program milestones, e.g., when connections are made, when messages and sent and received, and what was sent and what was received. (Good examples of tracing messages can be found in the sample code provided.)
-* The client and server should be designed to anticipate and gracefully handle reasonable errors which could occur at either end of the communication channel. For example, the client should attempt to prevent malformed requests to the server, and the server should avoid crashing if it receives a malformed request. Remember, in the real world there is no guarantee that your server will only have to deal with communications from your (presumably friendly) client!
-* Source code of your client and server must be appropriately documented. Comments should be sufficient to allow a third party to understand your code, run it, and confirm that it works.
+message sent, waiting for reply
 
-## Deliverables
+Received response: 'Hello, world' [12 bytes]
 
-Your work on this project must be submitted for grading by **Thursday, October 10th at 11:59PM**. Extensions may be obtained by sending me a message on Slack before the original due date.
+client is done!
 
-All work must be submitted in Gradescope.
+2. VPN trace: 
 
-You must submit these work products:
+VPN starting - listening for connections at IP 127.0.0.1 and port 55554
 
-1. Source code for your client and VPN.
-2. A **text** (.txt or .md) document with a written description of your client-VPN message format (that is, a description of all implemented client and VPN messages, and how the various components of each message are represented). Your goal in writing this document should be to convey enough information in enough detail to allow a competent programmer **without access to your source code** to write either a new client that communicates properly with your VPN server, or a new VPN server that communicates properly with your client. This document should include at least **six** sections: Overview of Application, Client->VPN Server Message Format, VPN Server->Client Message Format, Example Output, **a description of how the network layers are interacting when you run your server, VPN server, and client**, and Acknowledgments.
-3. A command-line trace showing the client and server in operation. 
+Connected established with ('127.0.0.1', 58850)
 
-## Teamwork Policy
+Received client message
 
-**For this project, all work must be submitted individually – no team submissions will be allowed**. You are free to collaborate and exchange ideas, but each student must submit their own original work. To the extent you obtain ideas and feedback from other students, you should give them proper credit in the Acknowledgments section of your specification document. For example, "Jane Austen helped me think through the different messages that my ATM server might need to be able to handle", "Sophia Smith helped me understand the purpose of the htons() function". **You should not use the Acknowledgments section to acknowledge help from the course instructor or teaching assistant.** The purpose of the section is to allow students to give appropriate credit for any peer assistance in conceiving and completing individual assignments.
+Decoded client message: Hello, world, for server at IP 127.0.0.1 and port 65432
 
-## Grading Rubric
+connection with server established, sending request 'Hello, world'
 
-Your work on this project will be graded on a five-point scale. Fractional points may be awarded.
+message sent, waiting for reply
 
-_0 pts:_ No deliverables were received by the due date or requested extension date.
+sending result message'b'Hello, world'' back to client
 
-_1 pt:_ Incomplete deliverables were received by the due date or extension date.
+VPN is done!
 
-_2 pts:_ Required deliverables were received but are deficient in various ways (e.g., incomplete documentation, code doesn’t run)
 
-_3 pts:_ Complete and adequate deliverables. Code runs but is deficient in various ways.
+3. Server trace: 
 
-_4 pts:_ Code runs and does most but not all of what is required.
+server starting - listening for connections at IP 127.0.0.1 and port 65432
 
-_5 pts:_ Nailed it. Complete deliverables, code runs and does what is required.
+Connected established with ('127.0.0.1', 58782)
+
+Received client message: 'b'Hello, world'' [12 bytes]
+
+echoing 'b'Hello, world'' back to client
+
+server is done!
+
+
+## a description of how the network layers are interacting when you run your server, VPN server, and client
+The client, VPN, and server are all on the same IP address. We can think of the application layer and the transport layer preparing the data as necessary. But when it hits the networking layer, then it sees that it has the same IP address. So instead of touching the link layer it goes back up the stack because the data has arrived at its destination. 
+
+
+## Acknowledgments
+
+No help was needed for this project 
+
